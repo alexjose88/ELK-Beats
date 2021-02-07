@@ -1,0 +1,30 @@
+version: "3.3"
+services:
+  elasticsearch:
+    image: elasticsearch:7.10.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    volumes:
+      - $PWD/elasticsearch/data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: logstash:7.10.1
+    ports:
+      - "9600:9600"
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ${PWD}/logstash/pipeline:/usr/share/logstash/pipeline
+      - ${PWD}/logs:/logs
+
+  phpapp:
+    build:
+      context: ${PWD}/phpapp
+      dockerfile: Dockerfile
+    volumes:
+      - ${PWD}/phpapp:/var/www/html
+      - ${PWD}/logs:/var/logs
+    ports:
+      - 8080:80
